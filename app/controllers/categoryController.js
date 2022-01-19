@@ -20,6 +20,22 @@ exports.categoriesList = async (req, res, next) => {
   }
 };
 
+exports.getOneCategory = async (req, res, next) => {
+  try {
+    const category = await Category.findById(req.params.id);
+
+    if (!category) {
+      return res
+        .status(404)
+        .send({ success: false, message: "The category was not found!" });
+    }
+
+    return res.send(category);
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.addCategory = async (req, res, next) => {
   try {
     const schema = Joi.object({
@@ -45,21 +61,45 @@ exports.addCategory = async (req, res, next) => {
   }
 };
 
-exports.removeCategory = (req, res, next) => {
+exports.removeCategory = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    Category.findByIdAndRemove(id).then((category) => {
-      if (category) {
-        return res
-          .status(200)
-          .json({ success: true, message: "The category is deleted." });
-      } else {
-        return res
-          .status(404)
-          .json({ success: false, message: "The category was not found." });
-      }
-    });
+    const category = await Category.findByIdAndRemove(id);
+    if (!category) {
+      return res
+        .status(404)
+        .json({ success: false, message: "The category was not found." });
+    }
+
+    return res.send({ success: true, message: "The category is deleted." });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateCategory = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { name, icon, color } = req.body;
+
+    const category = await Category.findByIdAndUpdate(
+      id,
+      {
+        name,
+        icon,
+        color,
+      },
+      { new: true }
+    );
+
+    if (!category) {
+      return res
+        .status(404)
+        .json({ success: false, message: "The category was not found." });
+    }
+
+    return res.send(category);
   } catch (error) {
     next(error);
   }
