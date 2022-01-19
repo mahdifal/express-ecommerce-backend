@@ -7,7 +7,9 @@ mongoose.connection.on("error", (error) => {
 });
 
 const startMongoDB = () => {
-  mongoose.connect(`mongodb://${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}`);
+  mongoose.connect(
+    `mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}?authSource=admin`
+  );
 };
 
 module.exports = startMongoDB;
