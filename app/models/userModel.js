@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { sign } = require("../services/tokenService");
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -8,6 +9,7 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
+    unique: true,
   },
   password: {
     type: String,
@@ -40,6 +42,11 @@ const userSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now() },
   updatedAt: { type: Date, default: Date.now() },
 });
+
+userSchema.methods.generateAuthToken = function () {
+  const token = sign({ _id: this._id, isAdmin: this.isAdmin });
+  return token;
+};
 
 exports.User = mongoose.model("User", userSchema);
 exports.userSchema = userSchema;

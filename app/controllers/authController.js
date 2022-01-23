@@ -21,6 +21,7 @@ exports.login = async (req, res, next) => {
 
     if (user && compare(password, user.password)) {
       const token = user.generateAuthToken();
+      // const token = sign({ userId: user.id, isAdmin: user.isAdmin });
       // return res.send({ user: user.email, token });
       return res.send(token);
     } else {
