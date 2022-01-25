@@ -17,7 +17,7 @@ exports.productsList = async (req, res, next) => {
       filter = { category: req.query.categories.split(",") };
     }
 
-    const productList = await Product.find({}, projection || filter)
+    const productList = await Product.find({ filter }, projection)
       .select("-__v")
       .populate("category");
 
