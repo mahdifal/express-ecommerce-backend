@@ -64,7 +64,7 @@ exports.addProduct = async (req, res, next) => {
       name: Joi.string().required().min(2),
       description: Joi.string().min(3).max(200).required(),
       detailProduct: Joi.string().min(3).max(200),
-      image: Joi.string().min(3).max(200),
+      image: Joi.string().min(3).max(200).required(),
       images: Joi.string().min(3).max(200),
       brand: Joi.string().min(2).max(200),
       price: Joi.number().min(1),
@@ -81,11 +81,13 @@ exports.addProduct = async (req, res, next) => {
     const category = await Category.findById(req.body.category);
     if (!category) return res.status(404).send("Invalid category");
 
+    const filename = req.file.filename;
+    const pathFilename = `${process.env.APP_URL}/public/uploads/${filename}`;
+
     const {
       name,
       description,
       detailProduct,
-      image,
       images,
       brand,
       price,
@@ -99,7 +101,7 @@ exports.addProduct = async (req, res, next) => {
       name,
       description,
       detailProduct,
-      image,
+      image: pathFilename,
       images,
       brand,
       price,
@@ -222,6 +224,40 @@ exports.getProductCount = async (req, res, next) => {
     if (!productCount) return res.status(500).json({ success: false });
 
     return res.send({ productCount });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.addGalleryImages = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "The product id was not found." });
+    }
+
+    const files = req.files;
+    let imagesPaths = [];
+    const basePath = `${process.env.APP_URL}/public/uploads/`;
+
+    if (files) {
+      files.map((file) => {
+        imagesPaths.push(`${basePath}${file.filename}`);
+      });
+    }
+
+    const productImages = await Product.findByIdAndUpdate(
+      id,
+      { images: imagesPaths },
+      { new: true }
+    );
+
+    if (!productImages)
+      return res.status(500).send("The Product Images cannot be updated.");
+
+    return res.send(productImages);
   } catch (error) {
     next(error);
   }
