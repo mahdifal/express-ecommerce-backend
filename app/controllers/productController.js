@@ -2,6 +2,7 @@ const { Product } = require("../models/productModel");
 const { Category } = require("../models/categoryModel");
 const Joi = require("joi");
 const mongoose = require("mongoose");
+const pagination = require("../services/paginationService");
 
 exports.productsList = async (req, res, next) => {
   try {
@@ -17,9 +18,19 @@ exports.productsList = async (req, res, next) => {
       filter = { category: req.query.categories.split(",") };
     }
 
+    const apiName = "products";
+    const limit = parseInt(process.env.PER_PAGE);
+    const page = parseInt(req.query.page || 1);
+    const offset = (page - 1) * limit;
+
+    const productCount = await Product.count();
+    const totalPages = Math.ceil(productCount / limit);
+
     const productList = await Product.find({ filter }, projection)
       .select("-__v")
-      .populate("category");
+      .populate("category")
+      .limit(limit)
+      .skip(offset);
 
     if (!productList) return res.status(500).json({ success: false });
 
@@ -29,7 +40,7 @@ exports.productsList = async (req, res, next) => {
       data: {
         productList,
       },
-      //   meta: pagination({ totalPages, page, apiName, limit }),
+      meta: pagination({ totalPages, page, apiName, limit }),
     });
   } catch (error) {
     next(error);
