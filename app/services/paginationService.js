@@ -5,12 +5,12 @@ module.exports = function ({ totalPages, page, apiName, limit }) {
     next: hasNextPage(page, totalPages)
       ? `${process.env.APP_URL}/api/v1/${apiName}?page=${
           parseInt(page) + 1
-        }&limit=${limit}`
+        }&limit=${parseInt(limit)}`
       : null,
     prev: hasPrevPage(page)
       ? `${process.env.APP_URL}/api/v1/${apiName}?page=${
           parseInt(page) - 1
-        }&limit=${limit}`
+        }&limit=${parseInt(limit)}`
       : null,
   };
 };

@@ -19,8 +19,8 @@ exports.productsList = async (req, res, next) => {
     }
 
     const apiName = "products";
-    const limit = parseInt(process.env.PER_PAGE);
-    const page = parseInt(req.query.page || 1);
+    const limit = process.env.PER_PAGE;
+    const page = req.query.page || 1;
     const offset = (page - 1) * limit;
 
     const productCount = await Product.count();
@@ -93,7 +93,7 @@ exports.addProduct = async (req, res, next) => {
     if (!category) return res.status(404).send("Invalid category");
 
     const filename = req.file.filename;
-    const pathFilename = `${process.env.APP_URL}/public/uploads/${filename}`;
+    // const pathFilename = `${process.env.APP_URL}/public/uploads/${filename}`;
 
     const {
       name,
@@ -112,7 +112,7 @@ exports.addProduct = async (req, res, next) => {
       name,
       description,
       detailProduct,
-      image: pathFilename,
+      image: filename,
       images,
       brand,
       price,
@@ -251,11 +251,11 @@ exports.addGalleryImages = async (req, res, next) => {
 
     const files = req.files;
     let imagesPaths = [];
-    const basePath = `${process.env.APP_URL}/public/uploads/`;
+    // const basePath = `${process.env.APP_URL}/public/uploads/`;
 
     if (files) {
       files.map((file) => {
-        imagesPaths.push(`${basePath}${file.filename}`);
+        imagesPaths.push(file.filename);
       });
     }
 
