@@ -1,7 +1,6 @@
 const { User } = require("../models/userModel");
 const Joi = require("joi");
 const { hash, compare } = require("../services/hashService");
-const { sign, verify } = require("../services/tokenService");
 
 exports.login = async (req, res, next) => {
   try {

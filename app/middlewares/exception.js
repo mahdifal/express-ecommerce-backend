@@ -1,5 +1,5 @@
 module.exports = (app) => {
-  app.use((error, req, res, next) => {
+  app.use((error, req, res) => {
     const status = error.status || 500;
 
     res.send({
