@@ -1,12 +1,30 @@
 const { Order } = require("../models/orderModel");
 const { OrderItem } = require("../models/orderItemModel");
 const Joi = require("joi");
+const pagination = require("../services/paginationService");
 
 exports.ordersList = async (req, res, next) => {
   try {
-    const orderList = await Order.find()
+    let projection = {};
+    if (req?.query?.hasOwnProperty("fields")) {
+      projection = req?.query?.fields?.split(",").reduce((total, current) => {
+        return { [current]: 1, ...total };
+      }, {});
+    }
+
+    const apiName = "orders";
+    const limit = process.env.PER_PAGE;
+    const page = req.query.page || 1;
+    const offset = (page - 1) * limit;
+
+    const ordersCount = await Order.count();
+    const totalPages = Math.ceil(ordersCount / limit);
+
+    const orderList = await Order.find({}, projection)
       .populate("user", "name")
-      .sort({ dateOrdered: -1 });
+      .sort({ dateOrdered: -1 })
+      .limit(limit)
+      .skip(offset);
 
     if (!orderList) return res.status(500).json({ success: false });
 
@@ -16,7 +34,7 @@ exports.ordersList = async (req, res, next) => {
       data: {
         orderList,
       },
-      //   meta: pagination({ totalPages, page, apiName, limit }),
+      meta: pagination({ totalPages, page, apiName, limit }),
     });
   } catch (error) {
     next(error);

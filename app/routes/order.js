@@ -5,12 +5,12 @@ const auth = require("../middlewares/auth");
 const admin = require("../middlewares/admin");
 
 router.get("/", [auth, admin], orderController.ordersList);
-router.get("/:id", orderController.getOrder);
-router.post("/", orderController.addOrder);
-router.delete("/:id", orderController.removeOrder);
-router.put("/:id", orderController.updateOrder);
-router.get("/userorders/:userid", orderController.getUserOrders);
-router.get("/ordercount", orderController.orderCount);
-router.get("/totalprice", orderController.getTotalPrice);
+router.get("/:id", [auth], orderController.getOrder);
+router.post("/", [auth], orderController.addOrder);
+router.delete("/:id", [auth, admin], orderController.removeOrder);
+router.put("/:id", [auth, admin], orderController.updateOrder);
+router.get("/userorders/:userid", [auth, admin], orderController.getUserOrders);
+router.get("/ordercount", [auth, admin], orderController.orderCount);
+router.get("/totalprice", [auth, admin], orderController.getTotalPrice);
 
 module.exports = router;

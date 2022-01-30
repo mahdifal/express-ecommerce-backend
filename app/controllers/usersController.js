@@ -1,9 +1,28 @@
 const { User } = require("../models/userModel");
 const mongoose = require("mongoose");
+const pagination = require("../services/paginationService");
 
 exports.usersList = async (req, res, next) => {
   try {
-    const userList = await User.find().select("-password");
+    let projection = {};
+    if (req?.query?.hasOwnProperty("fields")) {
+      projection = req?.query?.fields?.split(",").reduce((total, current) => {
+        return { [current]: 1, ...total };
+      }, {});
+    }
+
+    const apiName = "users";
+    const limit = process.env.PER_PAGE;
+    const page = req.query.page || 1;
+    const offset = (page - 1) * limit;
+
+    const usersCount = await User.count();
+    const totalPages = Math.ceil(usersCount / limit);
+
+    const userList = await User.find({}, projection)
+      .select("-password")
+      .limit(limit)
+      .skip(offset);
 
     if (!userList) return res.status(500).json({ success: false });
 
@@ -13,7 +32,7 @@ exports.usersList = async (req, res, next) => {
       data: {
         userList,
       },
-      //   meta: pagination({ totalPages, page, apiName, limit }),
+      meta: pagination({ totalPages, page, apiName, limit }),
     });
   } catch (error) {
     next(error);

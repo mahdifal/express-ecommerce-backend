@@ -1,9 +1,27 @@
 const { Category } = require("../models/categoryModel");
 const Joi = require("joi");
+const pagination = require("../services/paginationService");
 
 exports.categoriesList = async (req, res, next) => {
   try {
-    const categoryList = await Category.find();
+    let projection = {};
+    if (req?.query?.hasOwnProperty("fields")) {
+      projection = req?.query?.fields?.split(",").reduce((total, current) => {
+        return { [current]: 1, ...total };
+      }, {});
+    }
+
+    const apiName = "categories";
+    const limit = process.env.PER_PAGE;
+    const page = req.query.page || 1;
+    const offset = (page - 1) * limit;
+
+    const categoriesCount = await Category.count();
+    const totalPages = Math.ceil(categoriesCount / limit);
+
+    const categoryList = await Category.find({}, projection)
+      .limit(limit)
+      .skip(offset);
 
     if (!categoryList) return res.status(500).json({ success: false });
 
@@ -13,7 +31,7 @@ exports.categoriesList = async (req, res, next) => {
       data: {
         categoryList,
       },
-      //   meta: pagination({ totalPages, page, apiName, limit }),
+      meta: pagination({ totalPages, page, apiName, limit }),
     });
   } catch (error) {
     next(error);
