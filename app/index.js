@@ -9,6 +9,7 @@ app.use(
   "/public/uploads",
   express.static(path.join(__dirname, "../public/uploads"))
 );
+require("./middlewares/exception")(app);
 require("./middlewares/404")(app);
 
 module.exports = (port) => {
